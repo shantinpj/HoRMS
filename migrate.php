@@ -86,6 +86,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     role TEXT CHECK(role IN ('normal', 'admin', 'super_admin')) DEFAULT 'normal',
+    mfa_secret TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )");
 

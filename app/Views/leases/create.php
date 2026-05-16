@@ -1,6 +1,21 @@
 <h1 class="text-3xl font-bold mb-8">New Lease Agreement</h1>
 
 <div class="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+    <?php if (empty($houses) || empty($tenants)): ?>
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+            <p class="font-bold">Notice</p>
+            <p>You need to have at least one **available house** and one **active tenant** to create a lease agreement.</p>
+            <div class="mt-2">
+                <?php if (empty($houses)): ?>
+                    <a href="/houses/create" class="text-blue-600 hover:underline font-bold">+ Add a House</a><br>
+                <?php endif; ?>
+                <?php if (empty($tenants)): ?>
+                    <a href="/tenants/create" class="text-blue-600 hover:underline font-bold">+ Add a Tenant</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <form action="/leases/store" method="POST">
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="house_id">Select House</label>

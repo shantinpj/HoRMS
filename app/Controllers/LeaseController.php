@@ -34,14 +34,18 @@ class LeaseController extends Controller {
         
         $housesQuery = "SELECT * FROM houses WHERE status = 'available'";
         $tenantsQuery = "SELECT * FROM tenants WHERE status = 'active'";
-        $params = [];
-        $this->applyDataIsolation($housesQuery, $params);
-        $this->applyDataIsolation($tenantsQuery, $params);
+        
+        $hParams = [];
+        $tParams = [];
+        
+        $this->applyDataIsolation($housesQuery, $hParams);
+        $this->applyDataIsolation($tenantsQuery, $tParams);
 
         $houses = $db->prepare($housesQuery);
-        $houses->execute($params);
+        $houses->execute($hParams);
+        
         $tenants = $db->prepare($tenantsQuery);
-        $tenants->execute($params);
+        $tenants->execute($tParams);
 
         $this->render('leases/create', [
             'houses' => $houses->fetchAll(),
