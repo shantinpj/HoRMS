@@ -28,9 +28,6 @@
                 </button>
             </div>
         </form>
-        <div class="text-center text-sm text-gray-500">
-            <p>Demo Super Admin: admin@houserent.com / admin123</p>
-        </div>
     </div>
 </div>
 

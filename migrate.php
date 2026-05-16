@@ -114,7 +114,6 @@ if ($stmt->fetchColumn() == 0) {
     $password = password_hash('admin123', PASSWORD_BCRYPT);
     $db->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)")
        ->execute(['Super Admin', 'admin@houserent.com', $password, 'super_admin']);
-    echo "Default Super Admin created: admin@houserent.com / admin123\n";
 }
 
 echo "Auth and Audit tables updated successfully!\n";
