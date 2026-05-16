@@ -26,3 +26,4 @@ A simplified House Rent Management system built with PHP and SQLite.
 - `public/`: The web root containing the entry point `index.php`.
 - `database/`: Contains the SQLite database file.
 - `migrate.php`: Script to initialize database tables.
+this is test commit
