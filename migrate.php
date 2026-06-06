@@ -4,21 +4,26 @@ require_once __DIR__ . '/app/Core/Database.php';
 use App\Core\Database;
 
 $db = Database::getInstance();
+$driver = $db->getAttribute(PDO::ATTR_DRIVER_NAME);
+$isMysql = $driver === 'mysql';
+
+$idType = $isMysql ? 'INT AUTO_INCREMENT PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+$realType = $isMysql ? 'DOUBLE' : 'REAL';
 
 // Houses table
 $db->exec("CREATE TABLE IF NOT EXISTS houses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     name TEXT NOT NULL,
     address TEXT NOT NULL,
     description TEXT,
-    rent_amount REAL NOT NULL,
+    rent_amount {$realType} NOT NULL,
     status TEXT DEFAULT 'available',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )");
 
 // Tenants table
 $db->exec("CREATE TABLE IF NOT EXISTS tenants (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     phone TEXT,
@@ -30,13 +35,13 @@ $db->exec("CREATE TABLE IF NOT EXISTS tenants (
 
 // Leases table
 $db->exec("CREATE TABLE IF NOT EXISTS leases (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     house_id INTEGER NOT NULL,
     tenant_id INTEGER NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    rent_amount REAL NOT NULL,
-    electricity_rate REAL DEFAULT 0,
+    rent_amount {$realType} NOT NULL,
+    electricity_rate {$realType} DEFAULT 0,
     status TEXT DEFAULT 'active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (house_id) REFERENCES houses(id),
@@ -45,22 +50,18 @@ $db->exec("CREATE TABLE IF NOT EXISTS leases (
 
 // Payments table (Expanded for manual charges)
 $db->exec("CREATE TABLE IF NOT EXISTS payments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     lease_id INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    
-    electricity_units REAL DEFAULT 0,
-    electricity_rate REAL DEFAULT 0,
-    electricity_amount REAL DEFAULT 0,
-    
-    cleaning_qty REAL DEFAULT 0,
-    cleaning_rate REAL DEFAULT 0,
-    cleaning_amount REAL DEFAULT 0,
-    
-    water_qty REAL DEFAULT 0,
-    water_rate REAL DEFAULT 0,
-    water_amount REAL DEFAULT 0,
-    
+    amount {$realType} NOT NULL,
+    electricity_units {$realType} DEFAULT 0,
+    electricity_rate {$realType} DEFAULT 0,
+    electricity_amount {$realType} DEFAULT 0,
+    cleaning_qty {$realType} DEFAULT 0,
+    cleaning_rate {$realType} DEFAULT 0,
+    cleaning_amount {$realType} DEFAULT 0,
+    water_qty {$realType} DEFAULT 0,
+    water_rate {$realType} DEFAULT 0,
+    water_amount {$realType} DEFAULT 0,
     payment_date DATE NOT NULL,
     status TEXT DEFAULT 'paid',
     transaction_id TEXT,
@@ -76,23 +77,27 @@ $paymentColumns = [
 ];
 
 foreach ($paymentColumns as $col) {
-    try { $db->exec("ALTER TABLE payments ADD COLUMN $col REAL DEFAULT 0"); } catch (Exception $e) {}
+    try { $db->exec("ALTER TABLE payments ADD COLUMN $col {$realType} DEFAULT 0"); } catch (Exception $e) {}
 }
 
 // Users table
+$roleDefinition = $isMysql
+    ? "role TEXT DEFAULT 'normal'"
+    : "role TEXT CHECK(role IN ('normal', 'admin', 'super_admin')) DEFAULT 'normal'";
+
 $db->exec("CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT CHECK(role IN ('normal', 'admin', 'super_admin')) DEFAULT 'normal',
+    {$roleDefinition},
     mfa_secret TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )");
 
 // Audit Logs table
 $db->exec("CREATE TABLE IF NOT EXISTS audit_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id {$idType},
     user_id INTEGER,
     action TEXT NOT NULL,
     details TEXT,
@@ -104,7 +109,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS audit_logs (
 // Update existing tables for data isolation (Add created_by)
 $tablesToUpdate = ['houses', 'tenants', 'leases', 'payments'];
 foreach ($tablesToUpdate as $table) {
-    try { $db->exec("ALTER TABLE $table ADD COLUMN created_by INTEGER REFERENCES users(id)"); } catch (Exception $e) {}
+    try { $db->exec("ALTER TABLE $table ADD COLUMN created_by INTEGER"); } catch (Exception $e) {}
 }
 
 // Create a default Super Admin if not exists
